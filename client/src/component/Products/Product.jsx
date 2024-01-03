@@ -1,0 +1,85 @@
+import React, {useEffect, useState} from 'react';
+import Liquors from './Liquors';
+import Groceries from './Groceries';
+import LiquorsTable from './LiquorsTable';
+import GroceriesTable from './GroceriesTable';
+import Cloths from './Cloths';
+import ClothsTable from './ClothsTable';
+import Cosmetics from './Cosmetics';
+import CosmeticsTable from './CosmeticsTable';
+
+function Product() {
+    const [categories, setCategories] = useState([]);
+    const [selectedOption, setSelectedOption] = useState('');
+    const [content, setContent] = useState(null);
+    const [table, setTable] = useState(null);
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/categories');
+                if(!response.ok) {
+                    throw new Error('Opps something went wrong');
+                } else {
+                   const categories = await response.json();
+                   setCategories(categories);
+                }
+            } catch(error) {
+                console.log('Error: ' + error);
+            }
+        }
+        fetchCategories();
+    }, []);
+
+    const handleSelectChange = (event) => {
+        const selectedOption = event.target.value;
+        console.log(selectedOption);
+        setSelectedOption(selectedOption);
+        switch(selectedOption) {
+            case 'Liquors':
+                setContent(<Liquors />);
+                setTable(<LiquorsTable />);
+                break;
+            case 'Groceries':
+                setContent(<Groceries />);
+                setTable(<GroceriesTable />);
+                break;
+            case 'Cloths':
+                setContent(<Cloths />);
+                setTable(<ClothsTable />);
+                break;
+            case 'Cosmetics':
+                setContent(<Cosmetics />);
+                setTable(<CosmeticsTable />);
+                break;
+            default:
+                setContent('');
+                break;
+        }
+    }
+
+    const handleSubmit = () => {
+
+    }
+
+    return (
+        <>
+         <h1>Add Product</h1>
+         <h2>{selectedOption}</h2>
+         <form onSubmit={handleSubmit}>
+            <div>
+                <select value={selectedOption} onChange={handleSelectChange}>
+                    <option value="" disabled>--Select Product Categories--</option>
+                    {Array.isArray(categories) && categories.map((category) => (
+                         <option value={category.name} key={category.id}>{category.name}</option>)
+                    )}
+                </select>
+            </div>
+            {content}
+            {table}
+         </form>
+
+        </>
+    )
+}
+
+export default Product;

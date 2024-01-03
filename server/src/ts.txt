@@ -1,0 +1,14 @@
+  // if (reqUrl.pathname === '/users' && req.method === 'GET') {
+  //   try {
+  //     const result = await pool.query('SELECT * FROM users');
+  //     res.writeHead(200, { 'Content-Type': 'application/json' });
+  //     res.end(JSON.stringify(result.rows));
+  //   } catch (error) {
+  //     console.error('Error executing query', error);
+  //     res.writeHead(500, { 'Content-Type': 'application/json' });
+  //     res.end(JSON.stringify({ error: 'Internal Server Error' }));
+  //   }
+  // } else {
+  //   res.writeHead(404, { 'Content-Type': 'text/plain' });
+  //   res.end('Not Found');
+  // }
