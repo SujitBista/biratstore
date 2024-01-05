@@ -164,8 +164,30 @@ const server = http.createServer(async (req, res) => {
             }
         });   
      } 
-     else if(reqUrl.pathname === '/product/cosmetics' && req.method === 'POST') {
-      
+     else if(reqUrl.pathname === '/product/liquors' && req.method === 'POST') {
+      if(req.headers['content-type'] === 'application/json') {
+         let body = '';
+         //chunk is a json object being read from the client in this case
+         req.on('data', (chunk) => {
+            body += chunk;
+         });
+         req.on('end', () => {
+            try {
+               const formData = JSON.parse(body);
+               console.log(formData);
+          
+   
+            }catch(error) {
+               console.error('Error parsing JSON:', error.message);
+               res.writeHead(400, { 'Content-Type': 'application/json' });
+               res.end(JSON.stringify({ message: 'Invalid JSON data' }));
+            }
+         });
+      } else {
+         res.writeHead(400, {'Content-Type': 'application/json'});
+         res.end(JSON.stringify({message: 'Invalid Content Type'}));
+         return;
+      }
      }
      else {
         res.writeHead(404, { 'Content-Type': 'text/plain'});

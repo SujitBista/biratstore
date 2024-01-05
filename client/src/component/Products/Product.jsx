@@ -13,6 +13,7 @@ function Product() {
     const [selectedOption, setSelectedOption] = useState('');
     const [content, setContent] = useState(null);
     const [table, setTable] = useState(null);
+    const [validationError, setValidationError] = useState('');
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -30,6 +31,10 @@ function Product() {
         fetchCategories();
     }, []);
 
+    const handleError = (errorMessage) => {
+        setValidationError(errorMessage);
+    }
+
     const handleSelectChange = (event) => {
         const {selectedIndex, options} = event.target;
         const selectedOptionElement = options[selectedIndex];
@@ -38,7 +43,7 @@ function Product() {
         setSelectedOption(categoryName);
         switch(categoryName) {
             case 'Liquors':
-                setContent(<Liquors categoryId={categoryId}/>);
+                setContent(<Liquors categoryId={categoryId} onError={handleError}/>);
                 setTable(<LiquorsTable />);
                 break;
             case 'Groceries':
@@ -64,7 +69,8 @@ function Product() {
         <>
          <h1>Add Product</h1>
          <h2>{selectedOption}</h2>
-         <form>
+         {/* <form> */}
+            {validationError && <div style={{color: 'red'}}> {validationError}</div>}
             <div>
                 <select onChange={handleSelectChange}>
                     <option value="" disabled>--Select Product Categories--</option>
@@ -75,7 +81,7 @@ function Product() {
             </div>
             {content}
             {table}
-         </form>
+         {/* </form> */}
         </>
     )
 }
