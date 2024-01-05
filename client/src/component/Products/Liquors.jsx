@@ -1,23 +1,37 @@
 import React, {useState} from 'react';
 
-function Liquors() {
-    const [liquorsFormData, setLiquorsFormData] = useState({name: '', qty: 0, price: 0});
+function Liquors(props) {
+    const [liquorsFormData, setLiquorsFormData] = useState({});
+    const handleSubmit = () => {
+         setLiquorsFormData((prevData) => ({...prevData,category_id: props.categoryId}));
+         setLiquorsFormData((prevData) => {
+            if(prevData.category_id !== null) {
+                console.log(liquorsFormData);
+            }
+         })
+    }
+
+    const handleChange = (event) => {
+        const {name, value} = event.target;
+        setLiquorsFormData({...liquorsFormData, [name]: value});
+    }
+
     return(
         <>
             <div>
                 <label htmlFor="name">Name</label>
-                <input style={{width: '200px'}} id="name" type="text" name="name" />
+                <input onChange={handleChange} style={{width: '200px'}} id="name" type="text" name="name" />
             </div>
             <div>
                  <label> Qty </label>
-                 <input type="text" name="qty"/>
+                 <input onChange={handleChange} type="text" name="qty"/>
             </div>
             <div>
                 <label htmlFor="price">Price</label>
-                <input id="price" type="text" name="price" />
+                <input onChange={handleChange} id="price" type="text" name="price" />
             </div>
             <div>
-                <button>Submit</button>
+                <button onClick={handleSubmit}>Submit</button>
             </div>
 
         </>

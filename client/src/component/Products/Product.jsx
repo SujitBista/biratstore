@@ -31,53 +31,51 @@ function Product() {
     }, []);
 
     const handleSelectChange = (event) => {
-        const selectedOption = event.target.value;
-        console.log(selectedOption);
-        setSelectedOption(selectedOption);
-        switch(selectedOption) {
+        const {selectedIndex, options} = event.target;
+        const selectedOptionElement = options[selectedIndex];
+        const categoryId = selectedOptionElement.getAttribute('data-id');
+        const categoryName = selectedOptionElement.getAttribute('name');
+        setSelectedOption(categoryName);
+        switch(categoryName) {
             case 'Liquors':
-                setContent(<Liquors />);
+                setContent(<Liquors categoryId={categoryId}/>);
                 setTable(<LiquorsTable />);
                 break;
             case 'Groceries':
-                setContent(<Groceries />);
+                setContent(<Groceries categoryId={categoryId}/>);
                 setTable(<GroceriesTable />);
                 break;
             case 'Cloths':
-                setContent(<Cloths />);
+                setContent(<Cloths categoryId={categoryId}/>);
                 setTable(<ClothsTable />);
                 break;
             case 'Cosmetics':
-                setContent(<Cosmetics />);
+                setContent(<Cosmetics categoryId={categoryId}/>);
                 setTable(<CosmeticsTable />);
                 break;
             default:
                 setContent('');
+                setTable(null);
                 break;
         }
-    }
-
-    const handleSubmit = () => {
-
     }
 
     return (
         <>
          <h1>Add Product</h1>
          <h2>{selectedOption}</h2>
-         <form onSubmit={handleSubmit}>
+         <form>
             <div>
-                <select value={selectedOption} onChange={handleSelectChange}>
+                <select onChange={handleSelectChange}>
                     <option value="" disabled>--Select Product Categories--</option>
                     {Array.isArray(categories) && categories.map((category) => (
-                         <option value={category.name} key={category.id}>{category.name}</option>)
+                         <option name={category.name} data-id={category.id} key={category.id}>{category.name}</option>)
                     )}
                 </select>
             </div>
             {content}
             {table}
          </form>
-
         </>
     )
 }
