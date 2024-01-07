@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import Liquors from './Liquors';
 import Groceries from './Groceries';
-import LiquorsTable from './LiquorsTable';
 import GroceriesTable from './GroceriesTable';
 import Cloths from './Cloths';
 import ClothsTable from './ClothsTable';
@@ -44,7 +43,7 @@ function Product() {
         switch(categoryName) {
             case 'Liquors':
                 setContent(<Liquors categoryId={categoryId} onError={handleError}/>);
-                setTable(<LiquorsTable />);
+                setTable(null);
                 break;
             case 'Groceries':
                 setContent(<Groceries categoryId={categoryId}/>);
@@ -69,7 +68,6 @@ function Product() {
         <>
          <h1>Add Product</h1>
          <h2>{selectedOption}</h2>
-         {/* <form> */}
             {validationError && <div style={{color: 'red'}}> {validationError}</div>}
             <div>
                 <select onChange={handleSelectChange}>
@@ -81,7 +79,6 @@ function Product() {
             </div>
             {content}
             {table}
-         {/* </form> */}
         </>
     )
 }

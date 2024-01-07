@@ -16,21 +16,20 @@ const server = http.createServer(async (req, res) => {
       return;
     }
    const reqUrl = url.parse(req.url, true);
-   const categoryId = parseInt(reqUrl.pathname.split('/').pop(), 10);
-     if(reqUrl.path === '/login') {
-         const filePath = path.join(__dirname, 'login.html');
-         fs.readFile(filePath, 'utf-8', (err, data) => {
-            if(err) {
-               res.writeHead(500, { 'Content-Type': 'text/plain'});
-               res.end('Internal Server Error');
-            } else {
+   const id = parseInt(reqUrl.pathname.split('/').pop(), 10);
+   if(reqUrl.path === '/login') {
+      const filePath = path.join(__dirname, 'login.html');
+      fs.readFile(filePath, 'utf-8', (err, data) => {
+         if(err) {
+            res.writeHead(500, { 'Content-Type': 'text/plain'});
+            res.end('Internal Server Error');
+         } else {
                res.setHeader('Cache-Control', 'no-cache');
                res.writeHead(200, {'Content-Type': 'text/html'});
                res.end(data);
             }
-          
-         })  
-     } else if(reqUrl.path == '/categories' && req.method === 'GET') {
+         });  
+   } else if(reqUrl.path == '/categories' && req.method === 'GET') {
          const selectQuery = 'SELECT * FROM categories ORDER BY id DESC';
          let client;
          try {
@@ -96,7 +95,7 @@ const server = http.createServer(async (req, res) => {
             return;
          }
      }
-     else if(reqUrl.pathname.startsWith('/categories/') && !isNaN(categoryId) && req.method === 'DELETE') {
+     else if(reqUrl.pathname.startsWith('/categories/') && !isNaN(id) && req.method === 'DELETE') {
           if(req.headers['content-type'] === 'application/json') {
             let body = ''; 
             req.on('data', (chunk) => {
@@ -123,7 +122,7 @@ const server = http.createServer(async (req, res) => {
             });
           }
      }
-     else if(reqUrl.pathname.startsWith('/categories/') && !isNaN(categoryId) && req.method === 'PUT') {
+     else if(reqUrl.pathname.startsWith('/categories/') && !isNaN(id) && req.method === 'PUT') {
       if(req.headers['content-type'] === 'application/json') {
         let body = ''; 
         req.on('data', (chunk) => {
@@ -149,8 +148,7 @@ const server = http.createServer(async (req, res) => {
            })
         });
       }
- }
-
+     }    
      else if(reqUrl.pathname === '/admin' && req.method === 'GET') {
         const filePath = path.join(__dirname, 'admin.html');
         fs.readFile(filePath, 'utf-8', (err, data) => {
@@ -164,6 +162,28 @@ const server = http.createServer(async (req, res) => {
             }
         });   
      } 
+     else if(reqUrl.pathname == '/product/liquors' && req.method === 'GET') {
+      const selectQuery = 'SELECT * FROM products ORDER BY product_id DESC';
+      let client;
+      try {
+         client = await pool.connect();
+         const result = await client.query(selectQuery);
+         const data = result.rows;
+         console.log(data);
+         res.writeHead(200, {'Content-Type': 'application/json'});
+         res.end(JSON.stringify(data));
+         //console.log('Retrieved data:', data);
+
+      } catch(error) {
+         console.error('Error fetching data from database: ', error);
+         res.writeHead(500, { 'Content-Type': 'application/json' });
+         res.end(JSON.stringify({ error: 'Internal Server Error' }));
+      } finally {
+         if (client) {
+            client.release(); // Release the client back to the pool
+          }
+      }
+     }
      else if(reqUrl.pathname === '/product/liquors' && req.method === 'POST') {
       if(req.headers['content-type'] === 'application/json') {
          let body = '';
@@ -171,22 +191,52 @@ const server = http.createServer(async (req, res) => {
          req.on('data', (chunk) => {
             body += chunk;
          });
-         req.on('end', () => {
+         req.on('end', async () => {
+            let client;
             try {
                const formData = JSON.parse(body);
                console.log(formData);
-          
+               client = await pool.connect();
+               const insertQuery = 'INSERT INTO products(product_name, qty, price, category_id) VALUES($1,$2,$3,$4) RETURNING *';
+               const result = await client.query(insertQuery, [formData.name, formData.qty, formData.price, formData.category_id]);
+               console.log(result.rows);
+               res.end(JSON.stringify(result.rows));
    
             }catch(error) {
                console.error('Error parsing JSON:', error.message);
                res.writeHead(400, { 'Content-Type': 'application/json' });
                res.end(JSON.stringify({ message: 'Invalid JSON data' }));
+            }finally {
+               if(client) {
+                  client.release();
+               }
             }
          });
       } else {
          res.writeHead(400, {'Content-Type': 'application/json'});
          res.end(JSON.stringify({message: 'Invalid Content Type'}));
          return;
+      }
+     } 
+     else if(reqUrl.pathname.startsWith('/product/liquors/') && !isNaN(id) && req.method === 'DELETE') {
+      if(!req.headers['content-type'] || req.headers['Content-Type'].toLowerCase() === 'application/json') {
+         console.log('entered the line');
+         pool.connect((err, client, release) => {
+              if(err) {
+                 throw new Error('Error acquring client', err.stack());
+              }
+              const deleteQuery = 'DELETE FROM products WHERE product_id=$1 RETURNING *';
+              const values = [id];
+              client.query(deleteQuery, values, (err, result) => {
+                 release();
+                 if(err) {
+                    console.error('Error deleting query: ' + err);
+                    res.end(JSON.stringify({message: 'Internal Server Error'}));
+                 } else {
+                    res.end(JSON.stringify(result.rows));
+                 }
+              });
+           })
       }
      }
      else {

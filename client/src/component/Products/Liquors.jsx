@@ -1,11 +1,27 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import axios from 'axios';
+import LiquorsTable from './LiquorsTable';
 
 function Liquors(props) {
     const [liquorsFormData, setLiquorsFormData] = useState({name: '', qty: '', price: ''});
+    const [liquors, setLiquors] = useState([]);
+    const [refresh, setRefresh] = useState(false);
+    const [editId, setEditId] = useState(0);
+    useEffect(() => {
+        const fetchData = async () => {
+            try{
+            const response = await axios.get('http://localhost:3001/product/liquors');
+            setLiquors(response.data);
+            } catch(error) {
+                console.log(error);
+            }
+        }
+        fetchData();
+    }, [refresh])
+
     const handleSubmit = async () => {
          try {
-            if (liquorsFormData.name.trim() === '') {
+            if (liquorsFormData.name === '') {
                 props.onError('Please enter a name.');
                 return;
             }else if (liquorsFormData.qty === '') {
@@ -20,6 +36,7 @@ function Liquors(props) {
             const response = await axios.post('http://localhost:3001/product/liquors', updatedFormData);
             console.log(response.status);
             setLiquorsFormData({ ...liquorsFormData, name: '', qty: '', price: '' });
+            setRefresh(!refresh);
          } catch(error) {
             console.log('Error submitting the data: ', error);
          }   
@@ -37,6 +54,26 @@ function Liquors(props) {
             props.onError('');
         } 
     }
+
+    const handleDelete = async (id) => {
+        const bolValue = window.confirm('Are you sure you want to delete?');
+        if(!bolValue) {
+            return;
+        }
+        try {
+            const liquor = liquors.find((liquor) => liquor.product_id === id);
+            const response = await axios.delete(`http://localhost:3001/product/liquors/${liquor.product_id}`);
+            console.log(response.data);
+            setRefresh(!refresh);
+        } catch(error) {
+            console.log('Error message: ' , error);
+            alert('Opps something went wrong. Please try it later');
+        }
+   }
+
+   const handleEdit = (id) => {
+        setEditId(id);
+   }
      console.log(liquorsFormData);
     return(
         <>
@@ -55,7 +92,7 @@ function Liquors(props) {
             <div>
                 <button onClick={handleSubmit}>Submit</button>
             </div>
-
+            <LiquorsTable liquors={liquors} onDelete={handleDelete} onEdit={handleEdit} id={editId}/>
         </>
     )
 }
