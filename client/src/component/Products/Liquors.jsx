@@ -74,6 +74,11 @@ function Liquors(props) {
    const handleEdit = (id) => {
         setEditId(id);
    }
+
+   const handleLiquorsUpdate = (updatedLiquors) => {
+        setLiquors(updatedLiquors);
+   }
+
      console.log(liquorsFormData);
     return(
         <>
@@ -92,7 +97,7 @@ function Liquors(props) {
             <div>
                 <button onClick={handleSubmit}>Submit</button>
             </div>
-            <LiquorsTable liquors={liquors} onDelete={handleDelete} onEdit={handleEdit} id={editId}/>
+            <LiquorsTable liquors={liquors} onDelete={handleDelete} onEdit={handleEdit} id={editId} onLiquorsUpdate={handleLiquorsUpdate}/>
         </>
     )
 }
