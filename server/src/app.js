@@ -134,7 +134,7 @@ const server = http.createServer(async (req, res) => {
               if(err) {
                  throw new Error('Error acquring client', err.stack());
               }
-              const updateQuery = 'UPDATE categories SET name=$1 WHERE id=$2 RETURNING *';
+              const updateQuery = `UPDATE categories SET name=$1 WHERE id=${id} RETURNING *`;
               const values = [category.name, category.id];
               client.query(updateQuery, values, (err, result) => {
                  release();
@@ -239,6 +239,63 @@ const server = http.createServer(async (req, res) => {
            })
       }
      }
+     else if(reqUrl.pathname.startsWith('/product/liquors/') && !isNaN(id) && req.method === 'PUT') {
+      const isJsonContentType = req.headers['content-type'] === 'application/json';
+      if(isJsonContentType) {
+        let requestBody = ''; 
+
+        //Read request data
+        req.on('data', (chunk) => {
+         try{
+            requestBody += chunk.toString(); 
+         } catch(error) {
+            console.error('Error reading request data', error);
+            res.end(JSON.stringify({message: 'Internal Server Error'}));
+         }
+       });
+
+        req.on('end', () => {
+         try {
+            const productData = JSON.parse(requestBody);
+            console.log(productData);
+            // Connect to the database
+            pool.connect((connectionError, client, release) => {
+               if(connectionError) {
+                  console.error('Error acquring database client:', connectionError.stack());
+                  res.writeHead(500, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ message: 'Internal Server Error' }));
+                  return release();
+               }
+
+               // Define the update query and values
+               const updateQuery = `UPDATE products SET product_name=$1, qty=$2, price=$3 WHERE product_id=${id} RETURNING *`;
+               const values = [productData.product_name, productData.qty, productData.price];
+               console.log(updateQuery);
+              // Execute the update query
+               client.query(updateQuery, values, (updateError, result) => {
+                try {
+                   if(updateError) {
+                      console.error('Error updating query: ' + updateError);
+                      res.writeHead(500, { 'Content-Type': 'application/json' });
+                      res.end(JSON.stringify({message: 'Internal Server Error'}));
+                   } else {
+                      res.writeHead(200, { 'Content-Type': 'application/json' });
+                      res.end(JSON.stringify(result.rows));
+                   }
+                } finally {
+                   // Release the database client back to the pool
+                   release();
+                }
+               });
+            })
+         } catch (jsonParseError) {
+            console.error('Error parsing JSON:', jsonParseError);
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: 'Invalid JSON format' }));
+         }
+        });
+      }
+     } 
      else {
         res.writeHead(404, { 'Content-Type': 'text/plain'});
         res.end('Page Not Found')
