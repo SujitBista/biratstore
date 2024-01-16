@@ -3,13 +3,22 @@ import axios from 'axios';
 
 function LiquorsTable(props) {
     const [loading, setLoading] = useState(false);
+    const [validationError, setValidationError] = useState('');
     const handleChange = (event) => {
         const {name, value}= event.target;
         const updatedLiquors = props.liquors.map((liquor) => {
             if(liquor.product_id === props.id) {
                 let updatedValue = value;
                 if(name === 'qty' || name === 'price') {
-                    updatedValue = parseInt(value);
+                    if(updatedValue === '') {
+                        updatedValue = '';
+                    } else {
+                        updatedValue = parseInt(value);
+                        if(isNaN(updatedValue)) {
+                            updatedValue = '';
+                        }
+                        setValidationError('');
+                    }
                 } 
                 return {...liquor, [name]: updatedValue};
             } else {
@@ -22,11 +31,22 @@ function LiquorsTable(props) {
     const handleSave = async () => {
         try {
             const data = props.liquors.find((liquor) => props.id === liquor.product_id);
+            if(data.qty === '' || data.price === '') {
+                setValidationError('Inavalid data. Please provide both the "Qty" and "Price" before submission.');
+                props.onError('');
+                return;
+            } else if(data.product_name === '') {
+                setValidationError('The "Name" field cannot be empty.');
+                props.onError('');
+                return;
+            }
             setLoading(true);
             await axios.put(`http://localhost:3001/product/liquors/${props.id}`, data);
             setLoading(false);
             props.onEdit(0);
             props.onRefresh();
+            setValidationError('');
+            props.onError('');
           
         } catch (error) {
             console.error('Faild to save data : ', error);
@@ -36,6 +56,7 @@ function LiquorsTable(props) {
  
     return(
         <>
+           {validationError && <span style={{color: 'red'}}>{validationError}</span>}
            <table style={{marginTop: '20px'}}>
                 <thead>
                     <tr>

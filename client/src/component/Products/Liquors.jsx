@@ -73,6 +73,7 @@ function Liquors(props) {
 
    const handleEdit = (id) => {
         setEditId(id);
+        props.onError('');
    }
 
    const handleLiquorsUpdate = (updatedLiquors) => {
@@ -82,7 +83,7 @@ function Liquors(props) {
    const handleRefresh = () => {
     setRefresh(!refresh);
    }
-   
+
     return(
         <>
             <div>
@@ -100,7 +101,7 @@ function Liquors(props) {
             <div>
                 <button onClick={handleSubmit}>Submit</button>
             </div>
-            <LiquorsTable liquors={liquors} onDelete={handleDelete} onEdit={handleEdit} id={editId} onLiquorsUpdate={handleLiquorsUpdate} onRefresh={handleRefresh}/>
+            <LiquorsTable liquors={liquors} onDelete={handleDelete} onEdit={handleEdit} id={editId} onLiquorsUpdate={handleLiquorsUpdate} onRefresh={handleRefresh} onError={props.onError}/>
         </>
     )
 }
