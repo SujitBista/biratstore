@@ -5,6 +5,8 @@ import LiquorsTable from './LiquorsTable';
 function Liquors(props) {
     const [liquorsFormData, setLiquorsFormData] = useState({name: '', qty: '', price: ''});
     const [liquors, setLiquors] = useState([]);
+    const [searchResult, setSearchResult] = useState([]);
+    const [searchToogle, setSearchToogle] = useState(false);
     const [refresh, setRefresh] = useState(false);
     const [editId, setEditId] = useState(0);
     useEffect(() => {
@@ -81,9 +83,27 @@ function Liquors(props) {
    }
    
    const handleRefresh = () => {
-    setRefresh(!refresh);
+        setRefresh(!refresh);
    }
 
+   const debounce = (func, delay) => {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    }
+   }
+   const debouncedSearch = debounce((value) => {
+        const matchedResult = liquors.filter((liquor) => liquor.product_name.toLowerCase().includes(value.toLowerCase()));
+        setSearchResult(matchedResult);
+        setSearchToogle(true);
+        }, 300);
+   
+   const handleSearch = (event) => {
+        const { value } = event.target;
+        debouncedSearch(value);
+   }
+    const displayData = searchToogle ? searchResult : liquors;
     return(
         <>
             <div>
@@ -101,7 +121,9 @@ function Liquors(props) {
             <div>
                 <button onClick={handleSubmit}>Submit</button>
             </div>
-            <LiquorsTable liquors={liquors} onDelete={handleDelete} onEdit={handleEdit} id={editId} onLiquorsUpdate={handleLiquorsUpdate} onRefresh={handleRefresh} onError={props.onError}/>
+            <div style={{marginTop: '50px'}}><label htmlFor="search">Search: </label><input type="text" name="search" onChange={handleSearch}/></div>
+            
+            <LiquorsTable liquors={displayData} onDelete={handleDelete} onEdit={handleEdit} id={editId} onLiquorsUpdate={handleLiquorsUpdate} onRefresh={handleRefresh} onError={props.onError}/>
         </>
     )
 }
