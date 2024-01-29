@@ -5,27 +5,32 @@ function LiquorsTable(props) {
     const [loading, setLoading] = useState(false);
     const [validationError, setValidationError] = useState('');
     const handleChange = (event) => {
+        console.log(props.liquors);
         const {name, value}= event.target;
         const updatedLiquors = props.liquors.map((liquor) => {
             if(liquor.product_id === props.id) {
                 let updatedValue = value;
                 if(name === 'qty' || name === 'price') {
                     if(updatedValue === '') {
-                        updatedValue = '';
+                        updatedValue = null;
                     } else {
                         updatedValue = parseInt(value);
                         if(isNaN(updatedValue)) {
-                            updatedValue = '';
+                            updatedValue = null;
                         }
                         setValidationError('');
                     }
                 } 
                 return {...liquor, [name]: updatedValue};
-            } else {
+            } 
+            else {
                 return liquor;
             }
         });
         props.onLiquorsUpdate(updatedLiquors);
+    }
+    const handlePageChange = (pageNumber) => {
+        props.onPageNumberChange(pageNumber);
     }
 
     const handleSave = async () => {
@@ -86,9 +91,19 @@ function LiquorsTable(props) {
                         <td>{liquor.price}</td>
                         <td>{liquor.qty * liquor.price}</td>
                         <td><button onClick={() => props.onEdit(liquor.product_id)}>Edit</button> <button onClick={() => props.onDelete(liquor.product_id)}>Delete</button></td>
-                    </tr>))}
+                    </tr>
+                    ))}
                 </tbody>
            </table>
+           <div>
+              <button onClick={() => handlePageChange(props.pageNumber - 1)}>Previous</button>
+              {Array.from({ length: props.totalPages }, (_, index) => (
+                <button key={index} onClick={() => handlePageChange(index + 1)}>
+                     {index + 1 === props.pageNumber ? <span style={{color: 'green'}}>{index + 1 }</span>: index + 1}
+                </button>
+              ))}
+              <button onClick={() => handlePageChange(props.pageNumber + 1)}>Next</button>
+           </div>
         </>
     )
 }

@@ -9,18 +9,30 @@ function Liquors(props) {
     const [searchToogle, setSearchToogle] = useState(false);
     const [refresh, setRefresh] = useState(false);
     const [editId, setEditId] = useState(0);
+    const [pageNumber, setPageNumber] = useState(1);
+    const itemsPerPage = 5;
+    const startIndex = (pageNumber - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const [currentLiquors, setCurrentLiquors] = useState([]);
+    const paginateSearchResult = searchResult.slice(startIndex, endIndex);
     useEffect(() => {
         const fetchData = async () => {
             try{
             const response = await axios.get('http://localhost:3001/product/liquors');
             setLiquors(response.data);
+            const initialSlicedState = response.data.slice(startIndex, endIndex);
+            setCurrentLiquors(initialSlicedState);
             } catch(error) {
                 console.log(error);
             }
         }
         fetchData();
-    }, [refresh])
+    }, [refresh, pageNumber,startIndex, endIndex])
 
+    const calculateTotalPage = (data) => {
+        return Math.ceil(data.length / itemsPerPage);
+    }
+    
     const handleSubmit = async () => {
          try {
             if (liquorsFormData.name === '') {
@@ -79,11 +91,29 @@ function Liquors(props) {
    }
 
    const handleLiquorsUpdate = (updatedLiquors) => {
-        setLiquors(updatedLiquors);
+        if(searchToogle) {
+            const updateResult = updatedLiquors.find(item => item.product_id === editId);
+            console.log('update result ', updateResult);
+            const updatedSearchResult = searchResult.map((product) => {
+                if(product.product_id === updateResult.product_id) {
+                    console.log(product);
+                    return {...product, ...updateResult};
+                } else {
+                    return product;
+                }
+            });
+            setSearchResult(updatedSearchResult);
+        } else {
+            setCurrentLiquors(updatedLiquors);
+        }    
    }
    
    const handleRefresh = () => {
         setRefresh(!refresh);
+   }
+
+   const handlePageNumber = (pageNumber) => {
+        setPageNumber(pageNumber);
    }
 
    const debounce = (func, delay) => {
@@ -101,9 +131,12 @@ function Liquors(props) {
    
    const handleSearch = (event) => {
         const { value } = event.target;
+        setPageNumber(1);
         debouncedSearch(value);
    }
-    const displayData = searchToogle ? searchResult : liquors;
+    const displayData = searchToogle ? paginateSearchResult : currentLiquors;
+    const totalPages = searchToogle ? calculateTotalPage(searchResult) : calculateTotalPage(liquors);
+    console.log(paginateSearchResult);
     return(
         <>
             <div>
@@ -123,7 +156,18 @@ function Liquors(props) {
             </div>
             <div style={{marginTop: '50px'}}><label htmlFor="search">Search: </label><input type="text" name="search" onChange={handleSearch}/></div>
             
-            <LiquorsTable liquors={displayData} onDelete={handleDelete} onEdit={handleEdit} id={editId} onLiquorsUpdate={handleLiquorsUpdate} onRefresh={handleRefresh} onError={props.onError}/>
+            <LiquorsTable 
+                liquors={displayData} 
+                onDelete={handleDelete} 
+                onEdit={handleEdit} 
+                id={editId} 
+                onLiquorsUpdate={handleLiquorsUpdate} 
+                onRefresh={handleRefresh} 
+                onError={props.onError}
+                onPageNumberChange={handlePageNumber}
+                totalPages={totalPages}
+                pageNumber= {pageNumber}
+                />
         </>
     )
 }
