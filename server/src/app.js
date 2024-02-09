@@ -257,7 +257,6 @@ const server = http.createServer(async (req, res) => {
         req.on('end', () => {
          try {
             const productData = JSON.parse(requestBody);
-            console.log(productData);
             // Connect to the database
             pool.connect((connectionError, client, release) => {
                if(connectionError) {
@@ -270,7 +269,6 @@ const server = http.createServer(async (req, res) => {
                // Define the update query and values
                const updateQuery = `UPDATE products SET product_name=$1, qty=$2, price=$3 WHERE product_id=${id} RETURNING *`;
                const values = [productData.product_name, productData.qty, productData.price];
-               console.log(updateQuery);
               // Execute the update query
                client.query(updateQuery, values, (updateError, result) => {
                 try {

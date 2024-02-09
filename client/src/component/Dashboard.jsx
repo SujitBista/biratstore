@@ -5,6 +5,7 @@ import MainContent from './MainContent';
 //import Footer from './Footer';
 import Category from './Products/category';
 import Product from './Products/Product';
+import Sale from './Products/Sale';
 
 function Dashboard() {
     const [selectedLink, setSelectedLink] = useState('');
@@ -19,6 +20,8 @@ function Dashboard() {
                 return <Category />
             case 'Product':
                 return <Product />
+            case 'Sale':
+                return <Sale />
             default:
                 return null;
         }
