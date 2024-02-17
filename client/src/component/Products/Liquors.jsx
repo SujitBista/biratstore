@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import LiquorsTable from './LiquorsTable';
+import styles from './Liquors.module.css';
 
 function Liquors(props) {
     const [liquorsFormData, setLiquorsFormData] = useState({name: '', qty: '', price: ''});
@@ -154,8 +155,9 @@ function Liquors(props) {
             <div>
                 <button onClick={handleSubmit}>Submit</button>
             </div>
-            <div style={{marginTop: '50px'}}><label htmlFor="search">Search: </label><input type="text" name="search" onChange={handleSearch}/></div>
-            
+
+            <h1>Products</h1>
+            <input placeholder="Search Products" type="search" className={styles["search-box"]} name="search" onChange={handleSearch}/>
             <LiquorsTable 
                 liquors={displayData} 
                 onDelete={handleDelete} 

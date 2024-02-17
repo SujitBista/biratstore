@@ -8,7 +8,7 @@ const path = require('path');
 
 const server = http.createServer(async (req, res) => {
    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE');
    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
    if (req.method === 'OPTIONS') {
       res.writeHead(200);
@@ -294,6 +294,54 @@ const server = http.createServer(async (req, res) => {
         });
       }
      } 
+     else if(reqUrl.pathname === '/api/checkout' && req.method === 'PATCH') {
+         //first need to validate if it's a JSON request
+         console.log('patch request');
+         const isJSONContentType = req.headers['content-type'] === 'application/json';
+         let requestBody = '';
+         if(isJSONContentType) {
+            console.log('JSON content');
+            req.on('data', (chunk) => {
+               try {
+                  requestBody += chunk.toString();
+               } catch(error) {
+                  console.error('Error reading request data', error);
+                  res.end(JSON.stringify({message: 'Internal Server Error'}));
+               } 
+            });
+            req.on('end', () => {
+               try {
+                  const productData = JSON.parse(requestBody); //covert JSON data to a javascript object
+                  console.log(productData);
+                  pool.connect((connectionError, client, release) => {
+                     if(connectionError) {
+                        console.log('Error acquiring database client:', connectionError.stack());
+                        res.writeHead(500, {'Content-Type': 'application/json'});
+                        res.end(JSON.stringify({message: 'Internal Server Error'}));
+                     }
+                     client.query(`UPDATE products SET qty = $1 WHERE product_id = $2 RETURNING *`, [productData.qty, productData.product_id], (updateError, result) => {
+                        try {
+                           if(updateError) {
+                              res.writeHead(500, JSON.stringify({'Content-Type': 'application/json'}));
+                              res.end(JSON.stringify({message: 'Internal Server Error'}));
+                           } else {
+                              res.writeHead(200, JSON.stringify({'Content-Type': 'application/json'}));
+                              res.end(JSON.stringify(result.rows))
+                           }
+                        } finally{
+                           release();
+                        }
+                     });
+                  });
+
+               } catch (jsonParseError) { // catch the error if line number 314 fails which is a result of parsing JSON.parse(requestBody)
+                  console.error('Error parsing JSON:', jsonParseError);
+                  res.writeHead(400, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ message: 'Invalid JSON format' }));
+               }
+            })
+         }     
+     }
      else {
         res.writeHead(404, { 'Content-Type': 'text/plain'});
         res.end('Page Not Found')

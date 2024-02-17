@@ -6,6 +6,7 @@ import MainContent from './MainContent';
 import Category from './Products/category';
 import Product from './Products/Product';
 import Sale from './Products/Sale';
+import styles from './Dashboard.module.css';
 
 function Dashboard() {
     const [selectedLink, setSelectedLink] = useState('');
@@ -29,11 +30,12 @@ function Dashboard() {
 
     return(
        <>
-        {/* <h1>Dash Board</h1>
-         <Header /> */}
-         <SideBar onLinkClick={handleSidebarLinkClick}/>
-         <MainContent childContent={renderMainContent} /> 
-         {/* <Footer /> */}
+            <div className={styles.layout}>
+                <SideBar onLinkClick={handleSidebarLinkClick}/>
+                <main>
+                    <MainContent childContent={renderMainContent} /> 
+                </main>
+            </div>
        </>
     )
 }

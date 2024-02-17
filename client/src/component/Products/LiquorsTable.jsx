@@ -58,41 +58,44 @@ function LiquorsTable(props) {
             setLoading(false);
         }
     }
- 
-    return(
-        <>
-           {validationError && <span style={{color: 'red'}}>{validationError}</span>}
-           <table style={{marginTop: '20px'}}>
-                <thead>
-                    <tr>
+    const content = props.liquors && props.liquors.map((liquor) => (
+        liquor.product_id === props.id ? 
+        <tr key={liquor.product_id}>
+           <td><input type="text" name="product_name" value={liquor.product_name} onChange={handleChange}/></td>
+           <td><input type="text" name="qty" value={liquor.qty} onChange={handleChange}/></td>
+           <td><input type="text" name="price" value={liquor.price} onChange={handleChange}/></td>
+           <td><input type="text" value={liquor.qty * liquor.price} readOnly/></td>
+           <td>
+               <button onClick={() => props.onEdit(liquor.product_id)}>Edit</button> 
+               <button onClick={handleSave}>{!loading ? 'Save': 'Loading...'}</button>
+           </td>
+        </tr> :
+         <tr key={liquor.product_id}>
+           <td>{liquor.product_name}</td>
+           <td>{liquor.qty}</td>
+           <td>{liquor.price}</td>
+           <td>{liquor.qty * liquor.price}</td>
+           <td><button onClick={() => props.onEdit(liquor.product_id)}>Edit</button> <button onClick={() => props.onDelete(liquor.product_id)}>Delete</button></td>
+       </tr>
+       ));
+
+    const headings = <tr> 
                         <th>Name</th>
                         <th>Qty</th>
                         <th>Price</th>
                         <th>Total Price</th>
                         <th>Action</th>
-                    </tr>
+                    </tr>;
+
+    return(
+        <>
+           {validationError && <span style={{color: 'red'}}>{validationError}</span>}
+           <table style={{marginTop: '20px'}}>
+                <thead>
+                    {headings}
                 </thead>
                 <tbody>
-                    {props.liquors && props.liquors.map((liquor) => (
-                     liquor.product_id === props.id ? 
-                     <tr key={liquor.product_id}>
-                        <td><input type="text" name="product_name" value={liquor.product_name} onChange={handleChange}/></td>
-                        <td><input type="text" name="qty" value={liquor.qty} onChange={handleChange}/></td>
-                        <td><input type="text" name="price" value={liquor.price} onChange={handleChange}/></td>
-                        <td><input type="text" value={liquor.qty * liquor.price} readOnly/></td>
-                        <td>
-                            <button onClick={() => props.onEdit(liquor.product_id)}>Edit</button> 
-                            <button onClick={handleSave}>{!loading ? 'Save': 'Loading...'}</button>
-                        </td>
-                     </tr> :
-                      <tr key={liquor.product_id}>
-                        <td>{liquor.product_name}</td>
-                        <td>{liquor.qty}</td>
-                        <td>{liquor.price}</td>
-                        <td>{liquor.qty * liquor.price}</td>
-                        <td><button onClick={() => props.onEdit(liquor.product_id)}>Edit</button> <button onClick={() => props.onDelete(liquor.product_id)}>Delete</button></td>
-                    </tr>
-                    ))}
+                    {content}
                 </tbody>
            </table>
            <div>

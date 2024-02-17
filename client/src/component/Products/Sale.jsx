@@ -8,6 +8,7 @@ function Sale() {
     const [quantity, setQuantity] = useState(1);
     const [unit, setUnit] = useState('pieces');
     const [addToCart, setAddToCart] = useState([]);
+    const [refresh, setRefresh] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -20,7 +21,7 @@ function Sale() {
             }
         }
         fetchData();
-    }, []);
+    }, [refresh]);
 
     const handleSearch = (event) => {
         const searchTerm = event.target.value.toLowerCase();
@@ -77,7 +78,31 @@ function Sale() {
         addToCart.forEach(item => total+= parseInt(item.updatedPrice));
         return total;
     }
-    console.log(calculateTotalPrice());
+
+    const handleCheckOut = async () => {
+        try {
+            const patchRequest = addToCart.map((item) => {
+                const matchedProduct = products.find(product => product.product_id === item.product_id);
+                console.log(matchedProduct);
+                if(matchedProduct) {
+                    const updatedQty = matchedProduct.qty - item.qty;
+                    return axios.patch('http://localhost:3001/api/checkout', {
+                        product_id: matchedProduct.product_id,
+                        qty: updatedQty
+                    });
+                } else {
+                    console.log(`Product with ID ${item.product_id} not found.`);
+                    return Promise.resolve();
+                }
+            });
+            await Promise.all(patchRequest);
+            setAddToCart([]);
+            setRefresh(!refresh);
+        } catch(error) {
+            console.log(error);
+        }
+    }
+    
     return (
         <>
             <h1>Add Sale</h1>
@@ -154,7 +179,7 @@ function Sale() {
                         <td></td>
                         <td></td>
                         <td></td>
-                        <button style={{background: 'green', color: 'white', borderRadius: '25px'}}>Buy Now</button>
+                        <button onClick={handleCheckOut} style={{background: 'green', color: 'white', borderRadius: '25px'}}>Buy Now</button>
                     </tr>
                 </tbody>
             </table>
