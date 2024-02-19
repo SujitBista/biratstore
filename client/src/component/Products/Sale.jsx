@@ -83,7 +83,6 @@ function Sale() {
         try {
             const patchRequest = addToCart.map((item) => {
                 const matchedProduct = products.find(product => product.product_id === item.product_id);
-                console.log(matchedProduct);
                 if(matchedProduct) {
                     const updatedQty = matchedProduct.qty - item.qty;
                     return axios.patch('http://localhost:3001/api/checkout', {
@@ -102,7 +101,7 @@ function Sale() {
             console.log(error);
         }
     }
-    
+
     return (
         <>
             <h1>Add Sale</h1>

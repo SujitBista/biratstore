@@ -1,5 +1,6 @@
-import React, {useState} from 'react';
-//import Header from './Header';
+import React, {useEffect, useState} from 'react';
+import {useLocation} from 'react-router-dom';
+import Header from './Header';
 import SideBar from './SideBar';
 import MainContent from './MainContent';
 //import Footer from './Footer';
@@ -10,28 +11,32 @@ import styles from './Dashboard.module.css';
 
 function Dashboard() {
     const [selectedLink, setSelectedLink] = useState('');
+    const location = useLocation();
+    const arrayOfSplitedPath = location.pathname.split('/');
+    let lastElement = arrayOfSplitedPath[arrayOfSplitedPath.length - 1].toUpperCase();
 
-    const handleSidebarLinkClick = (link) => {
-        setSelectedLink(link);
-    }
+    useEffect(() => {
+        setSelectedLink(lastElement);
+    }, [lastElement]);
 
     const renderMainContent = () => {
         switch(selectedLink) {
-            case 'Category':   
+            case 'CATEGORY':   
                 return <Category />
-            case 'Product':
+            case 'PRODUCT':
                 return <Product />
-            case 'Sale':
+            case 'SALE':
                 return <Sale />
             default:
                 return null;
         }
     }
-
+    const heading = selectedLink !== 'Sale' && <Header />;
     return(
        <>
+            {heading}
             <div className={styles.layout}>
-                <SideBar onLinkClick={handleSidebarLinkClick}/>
+                <SideBar />
                 <main>
                     <MainContent childContent={renderMainContent} /> 
                 </main>

@@ -1,0 +1,23 @@
+.headerlayout {
+    display: grid;
+    grid-template-columns: 4fr 0.5fr;
+}
+.logo {
+    padding: 5px;
+}
+.bellIcon {
+    margin-top: 20px;
+}
+.notifications {
+    position: fixed;
+    top: 45px;
+    right: 20px;
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    overflow: auto;
+    max-height: 250px;
+    font-size: 20px;
+}

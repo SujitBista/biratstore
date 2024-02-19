@@ -197,11 +197,9 @@ const server = http.createServer(async (req, res) => {
                const formData = JSON.parse(body);
                console.log(formData);
                client = await pool.connect();
-               const insertQuery = 'INSERT INTO products(product_name, qty, price, category_id) VALUES($1,$2,$3,$4) RETURNING *';
-               const result = await client.query(insertQuery, [formData.name, formData.qty, formData.price, formData.category_id]);
-               console.log(result.rows);
+               const insertQuery = 'INSERT INTO products(product_name, units, qty, cost_price, price, category_id) VALUES($1,$2,$3,$4,$5,$6) RETURNING *';
+               const result = await client.query(insertQuery, [formData.name, formData.units, formData.qty, formData.cost_price, formData.price, formData.category_id]);
                res.end(JSON.stringify(result.rows));
-   
             }catch(error) {
                console.error('Error parsing JSON:', error.message);
                res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -267,8 +265,8 @@ const server = http.createServer(async (req, res) => {
                }
 
                // Define the update query and values
-               const updateQuery = `UPDATE products SET product_name=$1, qty=$2, price=$3 WHERE product_id=${id} RETURNING *`;
-               const values = [productData.product_name, productData.qty, productData.price];
+               const updateQuery = `UPDATE products SET product_name=$1, qty=$2, cost_price=$3, price=$4 WHERE product_id=${id} RETURNING *`;
+               const values = [productData.product_name, productData.qty, productData.cost_price, productData.price];
               // Execute the update query
                client.query(updateQuery, values, (updateError, result) => {
                 try {

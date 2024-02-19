@@ -4,7 +4,7 @@ import LiquorsTable from './LiquorsTable';
 import styles from './Liquors.module.css';
 
 function Liquors(props) {
-    const [liquorsFormData, setLiquorsFormData] = useState({name: '', qty: '', price: ''});
+    const [liquorsFormData, setLiquorsFormData] = useState({name: '', units: '', qty: '', cost_price: '', price: ''});
     const [liquors, setLiquors] = useState([]);
     const [searchResult, setSearchResult] = useState([]);
     const [searchToogle, setSearchToogle] = useState(false);
@@ -39,18 +39,26 @@ function Liquors(props) {
             if (liquorsFormData.name === '') {
                 props.onError('Please enter a name.');
                 return;
-            }else if (liquorsFormData.qty === '') {
+            } 
+            else if (liquorsFormData.units === '') {
+                props.onError('Please select the unit');
+                return;
+            }
+            else if (liquorsFormData.qty === '') {
                 props.onError('Please enter a qty.');
                 return;
-            }else if (liquorsFormData.price === '') {
+            }else if(liquorsFormData.cost_price === '') {
+                props.onError('Please enter a cost price.');
+                return;
+            }
+            else if (liquorsFormData.price === '') {
                 props.onError('Please enter a price.');
                 return;
             }
             const categoryId = parseInt(props.categoryId, 10);
             const updatedFormData = {...liquorsFormData,category_id: categoryId};
-            const response = await axios.post('http://localhost:3001/product/liquors', updatedFormData);
-            console.log(response.status);
-            setLiquorsFormData({ ...liquorsFormData, name: '', qty: '', price: '' });
+            await axios.post('http://localhost:3001/product/liquors', updatedFormData);
+            setLiquorsFormData({ ...liquorsFormData, name: '', qty: '', cost_price: '', price: '' });
             setRefresh(!refresh);
          } catch(error) {
             console.log('Error submitting the data: ', error);
@@ -61,7 +69,9 @@ function Liquors(props) {
         const {name, value} = event.target;
         if(name === 'qty' && isNaN(value)) {
             props.onError('"Qty" must be valid number');
-        } else if(name === 'price' && isNaN(value)) {
+        }else if(name === 'cost_price' && isNaN(value)) {
+            props.onError('"Cost Price" must be valid number');
+        }else if(name === 'price' && isNaN(value)) {
             props.onError('"Price" must be valid number');
         }else {
             const intVal = parseInt(value, 10);
@@ -137,7 +147,7 @@ function Liquors(props) {
    }
     const displayData = searchToogle ? paginateSearchResult : currentLiquors;
     const totalPages = searchToogle ? calculateTotalPage(searchResult) : calculateTotalPage(liquors);
-    console.log(paginateSearchResult);
+
     return(
         <>
             <div>
@@ -145,8 +155,19 @@ function Liquors(props) {
                 <input onChange={handleChange} value={liquorsFormData.name} style={{width: '200px'}} id="name" type="text" name="name" />
             </div>
             <div>
+                <label>Units</label>
+                <select>
+                    <option>pieces</option>
+                    <option>kg</option>
+                </select>
+            </div>
+            <div>
                  <label> Qty </label>
                  <input onChange={handleChange} value={liquorsFormData.qty} type="text" name="qty"/>
+            </div>
+            <div>
+                <label htmlFor="costprice">Cost Price</label>
+                <input onChange={handleChange} value={liquorsFormData.cost_price} id="costprice" type="text" name="cost_price" />
             </div>
             <div>
                 <label htmlFor="price">Price</label>

@@ -6,10 +6,12 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" exact element={<Dashboard />} />
-        <Route path="/products/category" element={<Dashboard />} />
-        <Route path="/products/product" element={<Dashboard />} />
-        <Route path="/products/sale" element={<Dashboard />} />
+        <Route path="/" element={<Dashboard />}>
+          <Route path="/products/category" element={<Dashboard />} />
+          <Route path="/products/product" element={<Dashboard />} />
+          <Route path="/products/sale" element={<Dashboard />} />
+          <Route path="/settings/units" element= {<Dashboard />} />
+        </Route>
       </Routes>
     </Router>
   );

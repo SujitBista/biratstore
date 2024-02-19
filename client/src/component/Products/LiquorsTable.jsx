@@ -5,12 +5,11 @@ function LiquorsTable(props) {
     const [loading, setLoading] = useState(false);
     const [validationError, setValidationError] = useState('');
     const handleChange = (event) => {
-        console.log(props.liquors);
         const {name, value}= event.target;
         const updatedLiquors = props.liquors.map((liquor) => {
             if(liquor.product_id === props.id) {
                 let updatedValue = value;
-                if(name === 'qty' || name === 'price') {
+                if(name === 'qty' || name === 'price' || name === 'cost_price') {
                     if(updatedValue === '') {
                         updatedValue = null;
                     } else {
@@ -36,6 +35,7 @@ function LiquorsTable(props) {
     const handleSave = async () => {
         try {
             const data = props.liquors.find((liquor) => props.id === liquor.product_id);
+            console.log(data);
             if(data.qty === '' || data.price === '') {
                 setValidationError('Inavalid data. Please provide both the "Qty" and "Price" before submission.');
                 props.onError('');
@@ -63,6 +63,7 @@ function LiquorsTable(props) {
         <tr key={liquor.product_id}>
            <td><input type="text" name="product_name" value={liquor.product_name} onChange={handleChange}/></td>
            <td><input type="text" name="qty" value={liquor.qty} onChange={handleChange}/></td>
+           <td><input type="text" name="cost_price" value={liquor.cost_price} onChange={handleChange}/></td>
            <td><input type="text" name="price" value={liquor.price} onChange={handleChange}/></td>
            <td><input type="text" value={liquor.qty * liquor.price} readOnly/></td>
            <td>
@@ -73,6 +74,7 @@ function LiquorsTable(props) {
          <tr key={liquor.product_id}>
            <td>{liquor.product_name}</td>
            <td>{liquor.qty}</td>
+           <td>{liquor.cost_price}</td>
            <td>{liquor.price}</td>
            <td>{liquor.qty * liquor.price}</td>
            <td><button onClick={() => props.onEdit(liquor.product_id)}>Edit</button> <button onClick={() => props.onDelete(liquor.product_id)}>Delete</button></td>
@@ -81,8 +83,9 @@ function LiquorsTable(props) {
 
     const headings = <tr> 
                         <th>Name</th>
-                        <th>Qty</th>
-                        <th>Price</th>
+                        <th>Qty In Stock</th>
+                        <th>Cost Price</th>
+                        <th>Sale Price</th>
                         <th>Total Price</th>
                         <th>Action</th>
                     </tr>;

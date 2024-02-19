@@ -5,3 +5,25 @@ ul {
 ul li  a {
     text-decoration: none;
 }
+
+/* .settings {
+    position: relative;
+    display: inline-block;
+} */
+
+/* .setting-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+} */
+
+/* .dropdown {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 100px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    z-index: 1;
+} */

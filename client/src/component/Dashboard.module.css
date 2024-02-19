@@ -2,6 +2,7 @@
 .layout {
     display: grid;
     grid-template-columns: 0.20fr 0.80fr;
+    font-size: 25px;
 }
 
 /**** applying css globally regardless of file it is defined on ****/
