@@ -7,6 +7,7 @@ import MainContent from './MainContent';
 import Category from './Products/category';
 import Product from './Products/Product';
 import Sale from './Products/Sale';
+import Units from './Settings/Units';
 import styles from './Dashboard.module.css';
 
 function Dashboard() {
@@ -27,6 +28,8 @@ function Dashboard() {
                 return <Product />
             case 'SALE':
                 return <Sale />
+            case 'UNITS':
+                return <Units />
             default:
                 return null;
         }

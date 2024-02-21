@@ -16,10 +16,13 @@ function Liquors(props) {
     const endIndex = startIndex + itemsPerPage;
     const [currentLiquors, setCurrentLiquors] = useState([]);
     const paginateSearchResult = searchResult.slice(startIndex, endIndex);
+    const [units, setUnits] = useState([]);
     useEffect(() => {
         const fetchData = async () => {
             try{
             const response = await axios.get('http://localhost:3001/product/liquors');
+            const units = await axios.get('http://localhost:3001/settings/unit');
+            setUnits(units.data);
             setLiquors(response.data);
             const initialSlicedState = response.data.slice(startIndex, endIndex);
             setCurrentLiquors(initialSlicedState);
@@ -147,7 +150,8 @@ function Liquors(props) {
    }
     const displayData = searchToogle ? paginateSearchResult : currentLiquors;
     const totalPages = searchToogle ? calculateTotalPage(searchResult) : calculateTotalPage(liquors);
-
+    const unitsData = units.map((item, index) => <option key={index} value={item.name}>{item.name}</option>);
+    console.log(liquorsFormData);
     return(
         <>
             <div>
@@ -156,9 +160,8 @@ function Liquors(props) {
             </div>
             <div>
                 <label>Units</label>
-                <select>
-                    <option>pieces</option>
-                    <option>kg</option>
+                <select onChange={handleChange} name="units">
+                    {unitsData}
                 </select>
             </div>
             <div>

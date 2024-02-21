@@ -21,7 +21,7 @@ function SideBar() {
                             {dropDown && <div className={styles.dropdown}>
                                 <ul>
                                     <li>
-                                        <Link to="/settings/units">Add Units</Link>
+                                        <Link to="/settings/units">Units</Link>
                                     </li>
                                 </ul>
                              </div>

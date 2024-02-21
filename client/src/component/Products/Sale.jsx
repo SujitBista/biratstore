@@ -1,10 +1,12 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
+import styles from './Sale.module.css';
 
 function Sale() {
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [products, setProducts] = useState([]);
     const [selectedProductId, setSelectedProductId] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [unit, setUnit] = useState('pieces');
     const [addToCart, setAddToCart] = useState([]);
@@ -25,6 +27,7 @@ function Sale() {
 
     const handleSearch = (event) => {
         const searchTerm = event.target.value.toLowerCase();
+        setSearchTerm(searchTerm);
         if(searchTerm) {
         const filteredOptions = products.filter((product) =>
           product.product_name.toLowerCase().includes(searchTerm)
@@ -36,10 +39,11 @@ function Sale() {
         }
       };
 
-    const handleSelectChange = (event) => {
-        const {value} = event.target;
-        setSelectedProductId(value);
-      }
+    const handleClick = (product_id, product_name) => {
+        setSelectedProductId(product_id);
+        setSearchTerm(product_name);
+        setFilteredProducts([]);
+    }
 
     const handleQuantityChange = (event) => {
         setQuantity(parseInt(event.target.value));
@@ -109,16 +113,15 @@ function Sale() {
                 <input
                     type="text"
                     placeholder="Product Search"
+                    value={searchTerm}
                     onChange={handleSearch}
                 />
-                <select value={selectedProductId} onChange={handleSelectChange}>
-                    <option value="" disabled> Select a Product</option>
+                {filteredProducts.length > 0 && <div className={styles.searchList}>
                     {filteredProducts.map((filteredProduct, index) => (
-                        <option key={index} value={filteredProduct.product_id}>
-                            {filteredProduct.product_name}
-                        </option>
+                        <div key={index} onClick={() => handleClick(filteredProduct.product_id, filteredProduct.product_name)}>{filteredProduct.product_name}</div>
                     ))}
-                </select>
+                </div>
+                }
             </div>  
             {selectedProductId && (
                 <form onSubmit={(event) => handleAddToCart(event, selectedProductId)}>

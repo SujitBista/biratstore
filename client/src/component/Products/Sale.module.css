@@ -1,0 +1,24 @@
+.searchList {
+    background-color: rgb(247, 223, 223);
+    border: 1px solid grey;
+    border-radius: 10px;
+    width: 400px;
+    max-height: 400px;
+    padding: 10px;
+    overflow: auto;
+}
+.searchList div {
+    padding: 3px;
+}
+.searchList div:hover {
+    background: green;
+    color: white;
+    border-radius: 10px;
+    padding: 5px;
+}
+/* button {
+    margin-top:10px;
+    background-color: green;
+    font-size: 18px;
+    color: white;
+} */
