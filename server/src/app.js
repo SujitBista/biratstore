@@ -195,15 +195,20 @@ const server = http.createServer(async (req, res) => {
             let client;
             try {
                const formData = JSON.parse(body);
-               console.log(formData);
                client = await pool.connect();
-               const insertQuery = 'INSERT INTO products(product_name, units, qty, cost_price, price, category_id) VALUES($1,$2,$3,$4,$5,$6) RETURNING *';
-               const result = await client.query(insertQuery, [formData.name, formData.units, formData.qty, formData.cost_price, formData.price, formData.category_id]);
+               const insertQuery = 'INSERT INTO products(product_name, units, qty, reorderlevel, cost_price, price, category_id) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *';
+               const result = await client.query(insertQuery, [formData.name, formData.units, formData.qty, formData.reorderlevel, formData.cost_price, formData.price, formData.category_id]);
                res.end(JSON.stringify(result.rows));
             }catch(error) {
-               console.error('Error parsing JSON:', error.message);
-               res.writeHead(400, { 'Content-Type': 'application/json' });
-               res.end(JSON.stringify({ message: 'Invalid JSON data' }));
+               if(error.code === '23505') {
+                  // PostgreSQL error code for unique violation
+                  res.writeHead(400, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ message: 'Duplicate entry' }));
+            }else {
+                  console.error('Error parsing JSON:', error.message);
+                  res.writeHead(400, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ message: 'Invalid JSON data' }));
+               }
             }finally {
                if(client) {
                   client.release();
@@ -265,8 +270,8 @@ const server = http.createServer(async (req, res) => {
                }
 
                // Define the update query and values
-               const updateQuery = `UPDATE products SET product_name=$1, qty=$2, cost_price=$3, price=$4 WHERE product_id=${id} RETURNING *`;
-               const values = [productData.product_name, productData.qty, productData.cost_price, productData.price];
+               const updateQuery = `UPDATE products SET product_name=$1, qty=$2, reorderlevel=$3,units=$4, cost_price=$5, price=$6 WHERE product_id=${id} RETURNING *`;
+               const values = [productData.product_name, productData.qty, productData.reorderlevel, productData.units, productData.cost_price, productData.price];
               // Execute the update query
                client.query(updateQuery, values, (updateError, result) => {
                 try {
@@ -340,6 +345,64 @@ const server = http.createServer(async (req, res) => {
             })
          }     
      }
+     else if(reqUrl.pathname == '/settings/unit' && req.method === 'GET') {
+      const selectQuery = 'SELECT * FROM units';
+      let client;
+      try {
+         client = await pool.connect();
+         const result = await client.query(selectQuery);
+         const data = result.rows;
+         res.writeHead(200, {'Content-Type': 'application/json'});
+         res.end(JSON.stringify(data));
+         //console.log('Retrieved data:', data);
+
+      } catch(error) {
+         console.error('Error fetching data from database: ', error);
+         res.writeHead(500, { 'Content-Type': 'application/json' });
+         res.end(JSON.stringify({ error: 'Internal Server Error' }));
+      } finally {
+         if (client) {
+            client.release(); // Release the client back to the pool
+          }
+      }
+     }
+     else if(reqUrl.pathname === '/settings/unit' && req.method === 'POST') {
+      if(req.headers['content-type'] === 'application/json') {
+         let body = '';
+         //chunk is a json object being read from the client in this case
+         req.on('data', (chunk) => {
+            body += chunk;
+         });
+         req.on('end', async () => {
+            let client;
+            try {
+               const formData = JSON.parse(body);
+               client = await pool.connect();
+               const insertQuery = 'INSERT INTO units(name) VALUES($1) RETURNING *';
+               const result = await client.query(insertQuery, [formData.name]);
+               res.end(JSON.stringify(result.rows));
+            }catch(error) {
+               if(error.code === '23505') {
+                     // PostgreSQL error code for unique violation
+                     res.writeHead(400, { 'Content-Type': 'application/json' });
+                     res.end(JSON.stringify({ message: 'Duplicate entry' }));
+               } else {
+                  console.error('Error parsing JSON:', error.message);
+                  res.writeHead(400, { 'Content-Type': 'application/json' });
+                  res.end(JSON.stringify({ message: 'Invalid JSON data' }));
+               }
+            }finally {
+               if(client) {
+                  client.release();
+               }
+            }
+         });
+      } else {
+         res.writeHead(400, {'Content-Type': 'application/json'});
+         res.end(JSON.stringify({message: 'Invalid Content Type'}));
+         return;
+      }
+     } 
      else {
         res.writeHead(404, { 'Content-Type': 'text/plain'});
         res.end('Page Not Found')

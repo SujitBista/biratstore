@@ -1,0 +1,20 @@
+.productstable {
+    border: 1px solid rgb(172, 210, 116);
+    margin-top: 20px;
+}
+
+.productstable td {
+    padding: 3px;
+}
+.contenttr{
+    background: gold;
+    color: black;
+}
+
+.heading th{
+    padding: 5px;
+    border: 1px solid grey;
+    background: green;
+    color: white;
+}
+

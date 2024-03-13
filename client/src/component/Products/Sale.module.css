@@ -1,19 +1,25 @@
+.productSearch > input{
+    width: 500px;
+    height: 30px;
+    font-size: 18px;
+}
+
 .searchList {
-    background-color: rgb(247, 223, 223);
-    border: 1px solid grey;
+    background-color: #f5f5dc;
+    color: #654321;
     border-radius: 10px;
-    width: 400px;
+    width: 450px;
     max-height: 400px;
-    padding: 10px;
+    padding: 10px 10px 2px 0;
     overflow: auto;
 }
 .searchList div {
     padding: 3px;
 }
 .searchList div:hover {
-    background: green;
-    color: white;
-    border-radius: 10px;
+    background: #B08A5D;
+    border-radius: 5px; 
+    width: 100%;
     padding: 5px;
 }
 /* button {
@@ -22,3 +28,28 @@
     font-size: 18px;
     color: white;
 } */
+.errorMsg {
+    width:fit-content;
+    color: white;
+    border: 1px solid red;
+    background: red;
+    padding: 10px;
+    opacity: 0.5;
+}
+
+.quantity input{
+    margin-top: 20px;
+    margin-left: 4px;
+    width: 300px;
+    height: 30px;
+    padding: 5px;
+    font-size: 20px;
+}
+
+.button {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    background: gold;
+}

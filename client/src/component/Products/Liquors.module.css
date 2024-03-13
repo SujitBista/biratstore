@@ -1,3 +1,34 @@
-.search-box {
-    width: 300px;
+.searchBox input{
+    width: 350px;
+    height: 40px;
+    padding: 10px;
+}
+.formRow input{
+    width: 20rem;
+}
+
+.formRow > div{
+    float: left;
+    margin-right: 10px;
+}
+
+.clearfix {
+    clear: both;
+}
+
+input[type="submit"] {
+    margin-top: 10px;
+    color: white;
+    background: green;
+    width: 90px;
+    height: 40px;
+    font-size: 18px;
+    border: 0px;
+    border-radius: 2px;
+    font-weight: 400;
+}
+
+input[type="submit"]:hover {
+    cursor: pointer;
+    opacity: 0.5;
 }

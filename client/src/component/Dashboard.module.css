@@ -5,6 +5,10 @@
     font-size: 25px;
 }
 
+.mainContent {
+    margin-left: 100px;
+}
+
 /**** applying css globally regardless of file it is defined on ****/
 input[type="text"] {
     border: 1px solid #ccc;

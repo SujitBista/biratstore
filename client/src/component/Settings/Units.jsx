@@ -1,7 +1,7 @@
 import React,{useState} from 'react';
 import axios from 'axios';
 
-function Units() {
+function Units(props) {
     const [error, setError] = useState('');
     const [popup, setPopUp] = useState(false);
     const [formData, setFormData] = useState({name: ''});
@@ -14,12 +14,17 @@ function Units() {
         const {name, value} = event.target;
         setFormData({...formData, [name]: value});
      }
+    
+    const handleRefresh = () => {
+        props.onLiquorsRefresh();
+    }
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
             await axios.post('http://localhost:3001/settings/unit', formData);
-            setFormData({...formData, value: ''});
+            setFormData({...formData, name: ''});
+            handleRefresh();
             console.log("form submitted successfully");
         } catch(error) {
             if(error.response) {
@@ -39,20 +44,14 @@ function Units() {
     return (
         <div>
             {error && <div className="error-message">{error.message}</div>}
-            <button onClick={handleAddUnit}>Add Unit</button>
+            <button onClick={handleAddUnit}>Add Units</button>
             {popup && 
                 <form onSubmit={handleSubmit}>
-                    <div><input placeholder="Name" value={formData.value} type="text" name="name" onChange={handleChange}/></div>
-                    {/* <div>
-                        <select name="base_unit" onChange={handleChange}>
-                            <option>Kg</option>
-                            <option>Carton</option>
-                        </select>
-                    </div> */}
+                    <div><input placeholder="Name" value={formData.name} type="text" name="name" onChange={handleChange}/></div>
                     <button type="submit">Submit</button>
                 </form>}
         </div>
-    )
+    );
 }
 
 export default Units;

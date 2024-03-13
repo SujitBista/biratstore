@@ -12,6 +12,7 @@ import styles from './Dashboard.module.css';
 
 function Dashboard() {
     const [selectedLink, setSelectedLink] = useState('');
+    const [liquorsRefresh, setLiquorsRefresh] = useState(false);
     const location = useLocation();
     const arrayOfSplitedPath = location.pathname.split('/');
     let lastElement = arrayOfSplitedPath[arrayOfSplitedPath.length - 1].toUpperCase();
@@ -20,16 +21,20 @@ function Dashboard() {
         setSelectedLink(lastElement);
     }, [lastElement]);
 
+    const handleLiquorsRefresh = () => {
+        setLiquorsRefresh(true);
+    }
+
     const renderMainContent = () => {
         switch(selectedLink) {
             case 'CATEGORY':   
                 return <Category />
             case 'PRODUCT':
-                return <Product />
+                return <Product passToLiquors={liquorsRefresh}/>
             case 'SALE':
                 return <Sale />
             case 'UNITS':
-                return <Units />
+                return <Units onLiquorsRefresh={handleLiquorsRefresh}/>
             default:
                 return null;
         }
@@ -40,7 +45,7 @@ function Dashboard() {
             {heading}
             <div className={styles.layout}>
                 <SideBar />
-                <main>
+                <main className={styles.mainContent}>
                     <MainContent childContent={renderMainContent} /> 
                 </main>
             </div>

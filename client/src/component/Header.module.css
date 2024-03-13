@@ -1,6 +1,9 @@
 .headerlayout {
     display: grid;
     grid-template-columns: 4fr 0.5fr;
+    background-color: green;
+    color: white;
+    padding-left: 40px;
 }
 .logo {
     padding: 5px;

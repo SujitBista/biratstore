@@ -8,9 +8,9 @@ function Sale() {
     const [selectedProductId, setSelectedProductId] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [quantity, setQuantity] = useState(1);
-    const [unit, setUnit] = useState('pieces');
     const [addToCart, setAddToCart] = useState([]);
     const [refresh, setRefresh] = useState(false);
+    const [errorMesssage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -26,6 +26,7 @@ function Sale() {
     }, [refresh]);
 
     const handleSearch = (event) => {
+        setErrorMessage('');
         const searchTerm = event.target.value.toLowerCase();
         setSearchTerm(searchTerm);
         if(searchTerm) {
@@ -49,10 +50,6 @@ function Sale() {
         setQuantity(parseInt(event.target.value));
     };
 
-    const handleUnitChange = (event) => {
-        setUnit(event.target.value);
-    };
-
     const handleAddToCart = (event,productId) => {
         let updatedItem;
         let sameProductFound = false;
@@ -60,9 +57,18 @@ function Sale() {
         const id = parseInt(productId);
         //from the list of products find the specific item that is matched
         let item = products.find(product => product.product_id === id);
+        if(quantity > item.qty) {
+            setErrorMessage('Qty you entered exceeds the qty you are trying to sell')
+            return;
+        }
+        
         const updatedCartItems = addToCart.map((cartProduct) => {
             if(item.product_id === cartProduct.product_id) {
                 sameProductFound = true;
+                if(cartProduct.qty + quantity > item.qty) {
+                    setErrorMessage('Qty you entered exceeds the qty you are trying to sell');
+                    return cartProduct;
+                }
                 return {...item, qty: cartProduct.qty + quantity, updatedPrice: item.price * (cartProduct.qty + quantity)}
             }
             return cartProduct;
@@ -70,11 +76,9 @@ function Sale() {
         if(sameProductFound) {
             setAddToCart(updatedCartItems);
         } else {
-              //const matched = addToCart.find(cartItem => cartItem.product_id === productId);
             updatedItem = {...item, updatedPrice: item.price * quantity, qty: quantity};
             setAddToCart([...addToCart, updatedItem]);
-        }
-        
+        } 
     }
     
     const calculateTotalPrice = () => {
@@ -88,9 +92,10 @@ function Sale() {
             const patchRequest = addToCart.map((item) => {
                 const matchedProduct = products.find(product => product.product_id === item.product_id);
                 if(matchedProduct) {
-                    const updatedQty = matchedProduct.qty - item.qty;
+                    const updatedQty =  matchedProduct.qty - item.qty;
                     return axios.patch('http://localhost:3001/api/checkout', {
                         product_id: matchedProduct.product_id,
+                        unit: item.unit,
                         qty: updatedQty
                     });
                 } else {
@@ -108,14 +113,18 @@ function Sale() {
 
     return (
         <>
+            {errorMesssage && <div className={styles.errorMsg}>{errorMesssage}</div>}
             <h1>Add Sale</h1>
             <div>
-                <input
-                    type="text"
-                    placeholder="Product Search"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                />
+                <div className={styles.productSearch}>
+                    <input
+                        type="text"
+                        placeholder="Product Search"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                    />
+                </div>
+
                 {filteredProducts.length > 0 && <div className={styles.searchList}>
                     {filteredProducts.map((filteredProduct, index) => (
                         <div key={index} onClick={() => handleClick(filteredProduct.product_id, filteredProduct.product_name)}>{filteredProduct.product_name}</div>
@@ -125,17 +134,7 @@ function Sale() {
             </div>  
             {selectedProductId && (
                 <form onSubmit={(event) => handleAddToCart(event, selectedProductId)}>
-                    <div>
-                        <label htmlFor="unit">Unit:</label>
-                        <select
-                            id="unit"
-                            name="unit"
-                            value={unit}
-                            onChange={handleUnitChange}
-                        >
-                            <option value="carton">Carton</option>
-                            <option value="pieces">Pieces</option>
-                        </select>
+                    <div className={styles.quantity}>
                         <label htmlFor="quantity">Quantity:</label>
                         <input
                             type="number"
@@ -145,7 +144,7 @@ function Sale() {
                             onChange={handleQuantityChange}
                         />
                     </div>
-                    <button type="submit">Add to Cart</button>
+                    <button className={styles.button} type="submit">Add to Cart</button>
                 </form>
             )}
             {addToCart.length > 0 && <table>
@@ -165,7 +164,7 @@ function Sale() {
                         <td>{cart.qty}</td>
                         <td>{cart.price}</td>
                         <td>{cart.updatedPrice}</td>
-                        <td>pieces</td>
+                        <td>{cart.units}</td>
                     </tr>
                  ))}
                     <tr>
@@ -181,7 +180,7 @@ function Sale() {
                         <td></td>
                         <td></td>
                         <td></td>
-                        <button onClick={handleCheckOut} style={{background: 'green', color: 'white', borderRadius: '25px'}}>Buy Now</button>
+                        <td><button onClick={handleCheckOut} style={{background: 'green', color: 'white', borderRadius: '25px'}}>Buy Now</button></td>
                     </tr>
                 </tbody>
             </table>

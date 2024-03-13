@@ -4,7 +4,7 @@ import LiquorsTable from './LiquorsTable';
 import styles from './Liquors.module.css';
 
 function Liquors(props) {
-    const [liquorsFormData, setLiquorsFormData] = useState({name: '', units: '', qty: '', cost_price: '', price: ''});
+    const [liquorsFormData, setLiquorsFormData] = useState({name: '', units: '', qty: '', cost_price: '', price: '', reorderlevel: 0});
     const [liquors, setLiquors] = useState([]);
     const [searchResult, setSearchResult] = useState([]);
     const [searchToogle, setSearchToogle] = useState(false);
@@ -17,12 +17,17 @@ function Liquors(props) {
     const [currentLiquors, setCurrentLiquors] = useState([]);
     const paginateSearchResult = searchResult.slice(startIndex, endIndex);
     const [units, setUnits] = useState([]);
+    const [selectedUnit, setSelectedUnits] = useState('');
+
     useEffect(() => {
         const fetchData = async () => {
             try{
             const response = await axios.get('http://localhost:3001/product/liquors');
             const units = await axios.get('http://localhost:3001/settings/unit');
             setUnits(units.data);
+            if(units.data && units.data.length > 0 && units.data[0] && units.data[0].name) {
+                setLiquorsFormData(prevData => ({ ...prevData, units: units.data[0].name})); 
+            }
             setLiquors(response.data);
             const initialSlicedState = response.data.slice(startIndex, endIndex);
             setCurrentLiquors(initialSlicedState);
@@ -37,8 +42,14 @@ function Liquors(props) {
         return Math.ceil(data.length / itemsPerPage);
     }
     
-    const handleSubmit = async () => {
+    const handleSubmit = async (event) => {
+         event.preventDefault();
          try {
+            let trimmedFormData = {};
+            Object.keys(liquorsFormData).forEach(field => {
+                trimmedFormData[field] = typeof liquorsFormData[field] === 'string' ? liquorsFormData[field].trim() : liquorsFormData[field];
+            });
+
             if (liquorsFormData.name === '') {
                 props.onError('Please enter a name.');
                 return;
@@ -58,18 +69,26 @@ function Liquors(props) {
                 props.onError('Please enter a price.');
                 return;
             }
+            else if(Number.isNaN(liquorsFormData.reorderlevel)) {
+                props.onError('Reorder Level must be a number');
+                return;
+            }
             const categoryId = parseInt(props.categoryId, 10);
-            const updatedFormData = {...liquorsFormData,category_id: categoryId};
-            await axios.post('http://localhost:3001/product/liquors', updatedFormData);
-            setLiquorsFormData({ ...liquorsFormData, name: '', qty: '', cost_price: '', price: '' });
+            trimmedFormData = {...trimmedFormData,category_id: categoryId};
+            await axios.post('http://localhost:3001/product/liquors', trimmedFormData);
+            setLiquorsFormData({ ...liquorsFormData, name: '', qty: '', cost_price: '', price: '', reorderlevel: 0 });
             setRefresh(!refresh);
          } catch(error) {
+            if(error.response.data.message === 'Duplicate entry') {
+                props.onError('Duplicate entry found');
+            }
             console.log('Error submitting the data: ', error);
          }   
     }
 
     const handleChange = (event) => {
         const {name, value} = event.target;
+        name === "units" &&  setSelectedUnits(value);
         if(name === 'qty' && isNaN(value)) {
             props.onError('"Qty" must be valid number');
         }else if(name === 'cost_price' && isNaN(value)) {
@@ -107,10 +126,8 @@ function Liquors(props) {
    const handleLiquorsUpdate = (updatedLiquors) => {
         if(searchToogle) {
             const updateResult = updatedLiquors.find(item => item.product_id === editId);
-            console.log('update result ', updateResult);
             const updatedSearchResult = searchResult.map((product) => {
                 if(product.product_id === updateResult.product_id) {
-                    console.log(product);
                     return {...product, ...updateResult};
                 } else {
                     return product;
@@ -148,40 +165,60 @@ function Liquors(props) {
         setPageNumber(1);
         debouncedSearch(value);
    }
+
     const displayData = searchToogle ? paginateSearchResult : currentLiquors;
     const totalPages = searchToogle ? calculateTotalPage(searchResult) : calculateTotalPage(liquors);
-    const unitsData = units.map((item, index) => <option key={index} value={item.name}>{item.name}</option>);
-    console.log(liquorsFormData);
+    const displayUnits = units.map((item, index) => <option key={index} value={item.name} >{item.name}</option>);
+
     return(
         <>
-            <div>
-                <label htmlFor="name">Name</label>
-                <input onChange={handleChange} value={liquorsFormData.name} style={{width: '200px'}} id="name" type="text" name="name" />
-            </div>
-            <div>
-                <label>Units</label>
-                <select onChange={handleChange} name="units">
-                    {unitsData}
-                </select>
-            </div>
-            <div>
-                 <label> Qty </label>
-                 <input onChange={handleChange} value={liquorsFormData.qty} type="text" name="qty"/>
-            </div>
-            <div>
-                <label htmlFor="costprice">Cost Price</label>
-                <input onChange={handleChange} value={liquorsFormData.cost_price} id="costprice" type="text" name="cost_price" />
-            </div>
-            <div>
-                <label htmlFor="price">Price</label>
-                <input onChange={handleChange} value={liquorsFormData.price} id="price" type="text" name="price" />
-            </div>
-            <div>
-                <button onClick={handleSubmit}>Submit</button>
-            </div>
+            <form onSubmit={handleSubmit}>
+                <div className={styles.formRow} >
+                    <div>
+                        <label htmlFor="name">Name</label> <br/>
+                        <input onChange={handleChange} placeholder="Name" value={liquorsFormData.name} id="name" type="text" name="name" required/>
+                    </div>
 
+                    <div>
+                        <label>Units</label> <br/>
+                        <select value={selectedUnit} onChange={handleChange} name="units">
+                            <option disabled >--Select--</option>
+                            {displayUnits}
+                        </select>
+                    </div>
+                </div>
+                <div className={styles.clearfix} />
+                <div className={styles.formRow} >
+                    <div>
+                        <label> Qty </label> <br/>
+                        <input onChange={handleChange} placeholder="Qty" value={liquorsFormData.qty} type="text" name="qty" required/>
+                    </div>
+                    <div>
+                        <label>Reorder Level</label> <br/>
+                        <input onChange={handleChange}  value={liquorsFormData.reorderlevel} type="text" name="reorderlevel"/>
+                    </div>
+                </div>
+                <div className={styles.clearfix} />
+                <div className={styles.formRow} >
+                    <div>
+                        <label htmlFor="costprice">Cost Price</label> <br/>
+                        <input onChange={handleChange} placeholder="Cost Price" value={liquorsFormData.cost_price} id="costprice" type="text" name="cost_price" required/>
+                    </div>
+                    <div>
+                        <label htmlFor="price">Selling Price</label> <br/>
+                        <input onChange={handleChange} placeholder="Selling Price" value={liquorsFormData.price} id="price" type="text" name="price" required/>
+                    </div>
+                </div>
+                <div className={styles.clearfix} />
+                <div>
+                    <input type="submit"/>
+                </div>
+            </form>
+           
             <h1>Products</h1>
-            <input placeholder="Search Products" type="search" className={styles["search-box"]} name="search" onChange={handleSearch}/>
+            <div className={styles.searchBox}>
+                 <input placeholder="Search Products" type="search" name="search" onChange={handleSearch}/>
+            </div>
             <LiquorsTable 
                 liquors={displayData} 
                 onDelete={handleDelete} 
@@ -193,6 +230,7 @@ function Liquors(props) {
                 onPageNumberChange={handlePageNumber}
                 totalPages={totalPages}
                 pageNumber= {pageNumber}
+                units={units}
                 />
         </>
     )

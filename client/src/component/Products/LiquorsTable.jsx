@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import axios from 'axios';
+import styles from './LiquorsTable.module.css';
 
 function LiquorsTable(props) {
     const [loading, setLoading] = useState(false);
@@ -35,7 +36,6 @@ function LiquorsTable(props) {
     const handleSave = async () => {
         try {
             const data = props.liquors.find((liquor) => props.id === liquor.product_id);
-            console.log(data);
             if(data.qty === '' || data.price === '') {
                 setValidationError('Inavalid data. Please provide both the "Qty" and "Price" before submission.');
                 props.onError('');
@@ -58,11 +58,30 @@ function LiquorsTable(props) {
             setLoading(false);
         }
     }
+
+    const headings = <tr className={styles.heading}> 
+        <th>Name</th>
+        <th>Qty In Stock</th>
+        <th>Reorder Level</th>
+        <th>Units</th>
+        <th>Cost Price</th>
+        <th>Sale Price</th>
+        <th>Total Price</th>
+        <th>Action</th>
+    </tr>;
+
     const content = props.liquors && props.liquors.map((liquor) => (
         liquor.product_id === props.id ? 
-        <tr key={liquor.product_id}>
+        <tr key={liquor.product_id} className={styles.contenttr}>
            <td><input type="text" name="product_name" value={liquor.product_name} onChange={handleChange}/></td>
            <td><input type="text" name="qty" value={liquor.qty} onChange={handleChange}/></td>
+           <td><input type="text" name="reorderlevel" value={liquor.reorderlevel} onChange={handleChange}/></td>
+           <td>
+                <select onChange={handleChange} name="units">
+                    <option>--Select--</option>
+                    {props.units.map((unit,index) => <option key={index}>{unit.name}</option>)}
+                </select>
+            </td>
            <td><input type="text" name="cost_price" value={liquor.cost_price} onChange={handleChange}/></td>
            <td><input type="text" name="price" value={liquor.price} onChange={handleChange}/></td>
            <td><input type="text" value={liquor.qty * liquor.price} readOnly/></td>
@@ -71,9 +90,11 @@ function LiquorsTable(props) {
                <button onClick={handleSave}>{!loading ? 'Save': 'Loading...'}</button>
            </td>
         </tr> :
-         <tr key={liquor.product_id}>
+         <tr className={styles.contenttr} key={liquor.product_id}>
            <td>{liquor.product_name}</td>
-           <td>{liquor.qty}</td>
+           <td>{liquor.qty}{" "}</td>
+           <td>{liquor.reorderlevel}</td>
+           <td>{liquor.units && liquor.units}</td>
            <td>{liquor.cost_price}</td>
            <td>{liquor.price}</td>
            <td>{liquor.qty * liquor.price}</td>
@@ -81,19 +102,10 @@ function LiquorsTable(props) {
        </tr>
        ));
 
-    const headings = <tr> 
-                        <th>Name</th>
-                        <th>Qty In Stock</th>
-                        <th>Cost Price</th>
-                        <th>Sale Price</th>
-                        <th>Total Price</th>
-                        <th>Action</th>
-                    </tr>;
-
     return(
         <>
            {validationError && <span style={{color: 'red'}}>{validationError}</span>}
-           <table style={{marginTop: '20px'}}>
+           <table className={styles.productstable}>
                 <thead>
                     {headings}
                 </thead>

@@ -1,11 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import Liquors from './Liquors';
-import Groceries from './Groceries';
-import GroceriesTable from './GroceriesTable';
-import Cloths from './Cloths';
-import ClothsTable from './ClothsTable';
-import Cosmetics from './Cosmetics';
-import CosmeticsTable from './CosmeticsTable';
 
 function Product() {
     const [categories, setCategories] = useState([]);
@@ -40,28 +34,8 @@ function Product() {
         const categoryId = selectedOptionElement.getAttribute('data-id');
         const categoryName = selectedOptionElement.getAttribute('name');
         setSelectedOption(categoryName);
-        switch(categoryName) {
-            case 'Liquors':
-                setContent(<Liquors categoryId={categoryId} onError={handleError}/>);
-                setTable(null);
-                break;
-            case 'Groceries':
-                setContent(<Groceries categoryId={categoryId}/>);
-                setTable(<GroceriesTable />);
-                break;
-            case 'Cloths':
-                setContent(<Cloths categoryId={categoryId}/>);
-                setTable(<ClothsTable />);
-                break;
-            case 'Cosmetics':
-                setContent(<Cosmetics categoryId={categoryId}/>);
-                setTable(<CosmeticsTable />);
-                break;
-            default:
-                setContent('');
-                setTable(null);
-                break;
-        }
+        setContent(<Liquors categoryId={categoryId} onError={handleError}/>);
+        setTable(null);
     }
 
     return (
@@ -70,7 +44,7 @@ function Product() {
          <h2>{selectedOption}</h2>
             {validationError && <div style={{color: 'red'}}> {validationError}</div>}
             <div>
-                <select onChange={handleSelectChange}>
+                <select value={selectedOption} onChange={handleSelectChange}>
                     <option value="" disabled>--Select Product Categories--</option>
                     {Array.isArray(categories) && categories.map((category) => (
                          <option name={category.name} data-id={category.id} key={category.id}>{category.name}</option>)
@@ -79,6 +53,7 @@ function Product() {
             </div>
             {content}
             {table}
+            {/* <Liquors  onError={handleError}/> */}
         </>
     )
 }
