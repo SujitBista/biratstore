@@ -1,0 +1,18 @@
+@media print {
+   body * {
+    visibility: hidden;
+   }
+   #myTable, #myTable * {
+    visibility: visible;
+   }
+   #myTable {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  .hideDuringPrint {
+     /* display: none !important; */
+     visibility: hidden !important;
+  }
+}
